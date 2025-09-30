@@ -9,7 +9,7 @@ function App() {
       <section className="min-h-[60vh] flex flex-col justify-center items-center text-center bg-gray-200 px-4 bg-[radial-gradient(circle_at_center,#a0aec0_1px,transparent_1px)] bg-[length:20px_20px] [mask-image:radial-gradient(circle,black_50%,transparent_100%)]">
         <div className="flex flex-col items-center w-full max-w-md mx-auto">
           <img
-            src="/public/mugshot.jpeg"
+            src="/mugshot.jpeg"
             alt="Trevor Sykes's profile picture"
             className="w-20 h-20 rounded-full mb-4 object-cover sm:w-24 sm:h-24"
             loading="lazy"
