@@ -46,7 +46,7 @@ function App() {
                   View My Work
                 </a>
                 <a
-                  href="/public/resume.pdf"
+                  href="/resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:border-gray-900 hover:text-gray-900 transition-all duration-150 hover:shadow-md"
