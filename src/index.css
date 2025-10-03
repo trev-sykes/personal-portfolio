@@ -3,3 +3,18 @@
 html {
     scroll-snap-type: y proximity;
 }
+
+/* Disable heavy blur on mobile for performance */
+@media (max-width: 768px) {
+
+    /* Tailwind class you used */
+    .backdrop-blur-xl {
+        backdrop-filter: none !important;
+        /* ensures it overrides Tailwind utilities */
+    }
+
+    /* Optional: disable smaller blurs if needed */
+    .backdrop-blur-sm {
+        backdrop-filter: none !important;
+    }
+}
