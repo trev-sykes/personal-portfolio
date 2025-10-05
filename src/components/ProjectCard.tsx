@@ -14,23 +14,19 @@ interface ProjectCardProps {
 const ProjectCard = ({ title, description, liveDemo, github, thumbnail }: ProjectCardProps) => {
     const cardRef = useRef<HTMLDivElement>(null);
 
-    // Track scroll progress of this specific card
     const { scrollYProgress } = useScroll({
         target: cardRef,
         offset: ["start end", "end start"]
     });
 
-    // Transform values based on scroll position with smoother curves
     const y = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [200, 0, -30, -150]);
     const rotate = useTransform(scrollYProgress, [0, 0.25, 0.5, 0.75, 1], [12, 0, -2, -5, -12]);
     const scale = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0.75, 1, 0.98, 0.8]);
     const opacity = useTransform(scrollYProgress, [0, 0.15, 0.75, 0.95], [0, 1, 1, 0]);
 
-    // Dynamic blur effect - more blur at entry/exit
     const blur = useTransform(scrollYProgress, [0, 0.15, 0.75, 1], [10, 0, 0, 8]);
     const blurValue = useTransform(blur, (value) => `blur(${value}px)`);
 
-    // Subtle brightness/saturation changes
     const brightness = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0.7, 1, 1, 0.8]);
     const saturate = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0.5, 1, 1, 0.7]);
 
@@ -45,11 +41,15 @@ const ProjectCard = ({ title, description, liveDemo, github, thumbnail }: Projec
                 filter: useTransform(
                     () => `${blurValue.get()} brightness(${brightness.get()}) saturate(${saturate.get()})`
                 ),
+                borderColor: 'var(--border-color)'
             }}
-            className="group relative rounded-3xl overflow-hidden border border-gray-200/50"
+            className="group relative rounded-3xl overflow-hidden border"
         >
-            {/* Glassmorphism backdrop */}
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-xl" />
+            {/* Glassmorphism backdrop - adapts to theme */}
+            <div
+                className="absolute inset-0 backdrop-blur-xl"
+                style={{ backgroundColor: 'var(--bg-tertiary)' }}
+            />
 
             {/* Animated gradient overlay */}
             <motion.div
@@ -61,23 +61,26 @@ const ProjectCard = ({ title, description, liveDemo, github, thumbnail }: Projec
 
             {/* Subtle shimmer effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                <div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"
+                    style={{
+                        backgroundImage: 'linear-gradient(to right, transparent, var(--bg-primary), transparent)'
+                    }}
+                />
             </div>
 
-            {/* Content wrapper with relative positioning */}
+            {/* Content wrapper */}
             <div className="relative">
-                {/* Thumbnail section with enhanced glass effect */}
+                {/* Thumbnail section */}
                 <div className="relative h-56 overflow-hidden">
                     {thumbnail ? (
                         <>
-                            {/* Image with overlay */}
                             <div className="absolute inset-0">
                                 <img
                                     src={thumbnail}
                                     alt={title}
                                     className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
                                 />
-                                {/* Gradient overlays for depth */}
                                 <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-transparent to-black/20" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-white/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             </div>
@@ -88,7 +91,11 @@ const ProjectCard = ({ title, description, liveDemo, github, thumbnail }: Projec
                                     href={liveDemo}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-11 h-11 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center text-gray-900 hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    className="w-11 h-11 backdrop-blur-md rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    style={{
+                                        backgroundColor: 'var(--bg-primary)',
+                                        color: 'var(--text-primary)'
+                                    }}
                                 >
                                     <FiExternalLink size={18} />
                                 </a>
@@ -96,39 +103,65 @@ const ProjectCard = ({ title, description, liveDemo, github, thumbnail }: Projec
                                     href={github}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="w-11 h-11 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center text-gray-700 hover:bg-white hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    className="w-11 h-11 backdrop-blur-md rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-xl"
+                                    style={{
+                                        backgroundColor: 'var(--bg-primary)',
+                                        color: 'var(--text-secondary)'
+                                    }}
                                 >
                                     <FiGithub size={18} />
                                 </a>
                             </div>
                         </>
                     ) : (
-                        <div className="flex items-center justify-center h-full bg-gradient-to-br from-gray-50 to-gray-100">
+                        <div
+                            className="flex items-center justify-center h-full"
+                            style={{
+                                background: `linear-gradient(to bottom right, var(--bg-secondary), var(--bg-tertiary))`
+                            }}
+                        >
                             <div className="text-8xl opacity-20 group-hover:opacity-30 group-hover:scale-110 transition-all duration-500">💻</div>
                         </div>
                     )}
                 </div>
 
-                {/* Content section with glass effect */}
-                <div className="relative p-7 bg-gradient-to-b from-white/50 to-white/80 backdrop-blur-sm">
-                    {/* Subtle top border line */}
-                    <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300/50 to-transparent" />
+                {/* Content section */}
+                <div
+                    className="relative p-7 backdrop-blur-sm"
+                    style={{
+                        background: `linear-gradient(to bottom, var(--bg-tertiary), var(--bg-secondary))`
+                    }}
+                >
+                    {/* Top border line */}
+                    <div
+                        className="absolute top-0 left-0 right-0 h-px"
+                        style={{
+                            background: `linear-gradient(to right, transparent, var(--border-color), transparent)`,
+                            opacity: 0.5
+                        }}
+                    />
 
-                    <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-gray-700 transition-colors duration-300">
+                    <h3
+                        className="text-xl font-bold mb-3 transition-colors duration-300"
+                        style={{ color: 'var(--text-primary)' }}
+                    >
                         {title}
                     </h3>
 
-                    <p className="text-sm text-gray-600 mb-6 leading-relaxed line-clamp-2 group-hover:text-gray-700 transition-colors duration-200">
+                    <p
+                        className="text-sm mb-6 leading-relaxed line-clamp-2 transition-colors duration-200"
+                        style={{ color: 'var(--text-secondary)' }}
+                    >
                         {description}
                     </p>
 
-                    {/* Action buttons with enhanced glass style */}
+                    {/* Action buttons */}
                     <div className="flex gap-3">
                         <a
                             href={liveDemo}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-all duration-200 shadow-md hover:shadow-xl transform hover:scale-[1.02] hover:-translate-y-0.5"
+                            className="btn-primary flex-1 flex items-center justify-center gap-2 text-sm"
                         >
                             <FiExternalLink size={16} />
                             <span>Live Demo</span>
@@ -137,7 +170,7 @@ const ProjectCard = ({ title, description, liveDemo, github, thumbnail }: Projec
                             href={github}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 px-5 py-3 bg-white/80 backdrop-blur-sm border border-gray-300 text-gray-700 rounded-xl text-sm font-medium hover:bg-white hover:border-gray-900 hover:text-gray-900 transition-all duration-200 shadow-sm hover:shadow-lg transform hover:scale-[1.02] hover:-translate-y-0.5"
+                            className="btn-secondary flex items-center justify-center gap-2 text-sm"
                         >
                             <FiGithub size={16} />
                             <span className="hidden sm:inline">Code</span>
@@ -146,14 +179,25 @@ const ProjectCard = ({ title, description, liveDemo, github, thumbnail }: Projec
                 </div>
             </div>
 
-            {/* Enhanced accent line at bottom with gradient */}
+            {/* Accent line at bottom */}
             <div className="absolute bottom-0 left-0 right-0 h-1 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-600 to-gray-800 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                <div
+                    className="absolute inset-0 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"
+                    style={{
+                        background: 'linear-gradient(to right, var(--color-gray-300), var(--color-gray-600), var(--color-gray-800))'
+                    }}
+                />
+                <div
+                    className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"
+                    style={{
+                        background: `linear-gradient(to right, transparent, var(--bg-primary), transparent)`,
+                        opacity: 0.5
+                    }}
+                />
             </div>
 
             {/* Outer glow effect */}
-            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none shadow-2xl shadow-gray-400/20" />
+            <div className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none shadow-2xl" />
         </motion.div>
     );
 };

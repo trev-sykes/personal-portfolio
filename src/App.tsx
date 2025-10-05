@@ -1,12 +1,36 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import type { Variants } from "framer-motion";
-import { FiExternalLink, FiGithub, FiMail } from 'react-icons/fi';
+import { FiExternalLink, FiGithub, FiMail, FiMoon, FiSun } from 'react-icons/fi';
 import projects from './projects';
 import ProjectCard from './components/ProjectCard';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 function App() {
-  // Animation variants for sections
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  // Load theme from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+      // Check system preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = prefersDark ? 'dark' : 'light';
+      setTheme(initialTheme);
+      document.documentElement.setAttribute('data-theme', initialTheme);
+    }
+  }, []);
+
+  // Toggle theme
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
   const fadeInUp: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
@@ -30,35 +54,63 @@ function App() {
     }
   };
 
-  // Ref and scroll tracking for projects section
   const projectsRef = useRef(null);
   const { scrollYProgress: projectsScroll } = useScroll({
     target: projectsRef,
     offset: ["start end", "end start"]
   });
-  // Refined parallax range: more pronounced movement
-  const projectsY = useTransform(projectsScroll, [0, 1], [0, -150]);
+  const projectsY = useTransform(projectsScroll, [0, 1], [0, -50]);
 
-  // Ref and scroll tracking for hero section
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({
     target: heroRef,
     offset: ["start end", "end start"]
   });
-  // Parallax for hero orbs: subtle movement
-  const heroY = useTransform(heroScroll, [0, 1], [0, -80]);
-
+  const heroY = useTransform(heroScroll, [0, 1], [100, -150]);
   return (
-    <div className="font-sans text-gray-800 bg-gradient-to-b from-gray-50 to-white">
+    <div
+      className="font-sans transition-colors duration-300"
+      style={{
+        backgroundColor: 'var(--bg-primary)',
+        color: 'var(--text-primary)'
+      }}
+    >
+      {/* Dark Mode Toggle Button */}
+      <motion.button
+        onClick={toggleTheme}
+        className="theme-toggle"
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.5 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        aria-label="Toggle theme"
+      >
+        <motion.div
+          initial={false}
+          animate={{ rotate: theme === 'dark' ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {theme === 'light' ? (
+            <FiMoon size={20} color="var(--text-primary)" />
+          ) : (
+            <FiSun size={20} color="var(--text-primary)" />
+          )}
+        </motion.div>
+      </motion.button>
+
       {/* HERO SECTION */}
-      <section ref={heroRef} className="min-h-[70vh] flex items-center justify-center px-4 py-12 relative overflow-hidden bg-white">
-        {/* Parallax orbs background */}
+      <section
+        ref={heroRef}
+        className="min-h-[70vh] flex items-center justify-center px-4 py-12 relative overflow-hidden"
+        style={{ backgroundColor: 'var(--bg-primary)' }}
+      >
         <div className="absolute inset-0 pointer-events-none">
           <svg className="absolute top-0 left-0 w-full h-full opacity-25" preserveAspectRatio="none">
             <defs>
               <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: '#6B7280', stopOpacity: 0.2 }} />
-                <stop offset="100%" style={{ stopColor: '#1E3A8A', stopOpacity: 0.1 }} />
+                <stop offset="0%" stopColor="var(--color-gray-600)" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="var(--color-blue-900)" stopOpacity="0.1" />
               </linearGradient>
             </defs>
             <motion.g style={{ y: heroY }}>
@@ -75,7 +127,6 @@ function App() {
           variants={staggerContainer}
         >
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-            {/* Profile image with enhanced glass effect */}
             <motion.div
               className="relative flex-shrink-0"
               variants={fadeInUp}
@@ -85,9 +136,12 @@ function App() {
                 <img
                   src="/mugshot.jpeg"
                   alt="Trevor Sykes"
-                  className="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover ring-4 ring-white shadow-2xl"
+                  className="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover ring-4 shadow-2xl"
+                  style={{
+                    borderColor: 'var(--bg-primary)',
+                    boxShadow: 'var(--shadow-2xl)'
+                  }}
                 />
-                {/* Glass overlay on image */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/0 via-white/10 to-white/0" />
               </div>
               <motion.div
@@ -99,23 +153,28 @@ function App() {
               </motion.div>
             </motion.div>
 
-            {/* Content */}
             <div className="flex-1 text-center md:text-left md:pt-4">
               <motion.div
                 variants={fadeInUp}
-                className="inline-block mb-3 px-5 py-2 bg-white/80 backdrop-blur-sm text-gray-700 rounded-full text-sm font-medium border border-gray-200/50 shadow-sm"
+                className="inline-block mb-3 px-5 py-2 backdrop-blur-sm rounded-full text-sm font-medium border shadow-sm"
+                style={{
+                  backgroundColor: 'var(--bg-tertiary)',
+                  color: 'var(--text-primary)',
+                  borderColor: 'var(--border-color)'
+                }}
               >
                 Available for opportunities
               </motion.div>
               <motion.h1
                 variants={fadeInUp}
-                className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent"
+                className="gradient-text text-4xl md:text-5xl font-bold mb-4"
               >
                 Trevor Sykes
               </motion.h1>
               <motion.p
                 variants={fadeInUp}
-                className="text-lg md:text-xl text-gray-600 mb-6 leading-relaxed max-w-xl"
+                className="text-lg md:text-xl mb-6 leading-relaxed max-w-xl"
+                style={{ color: 'var(--text-secondary)' }}
               >
                 Fullstack developer crafting clean, efficient web experiences with modern technologies.
               </motion.p>
@@ -123,17 +182,14 @@ function App() {
                 variants={fadeInUp}
                 className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start"
               >
-                <a
-                  href="#projects"
-                  className="px-7 py-3.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-all duration-200 shadow-lg hover:shadow-2xl transform hover:-translate-y-1"
-                >
+                <a href="#projects" className="btn-primary">
                   View My Work
                 </a>
                 <a
                   href="/resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-7 py-3.5 bg-white/80 backdrop-blur-sm border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:border-gray-900 hover:text-gray-900 hover:bg-white transition-all duration-200 shadow-sm hover:shadow-lg transform hover:-translate-y-1"
+                  className="btn-secondary"
                 >
                   Resume
                 </a>
@@ -143,9 +199,13 @@ function App() {
         </motion.div>
       </section>
 
-      {/* ABOUT SECTION with glass effect */}
-      <section className="py-20 px-4 bg-gradient-to-b from-white to-gray-50 relative">
-        {/* Subtle background pattern */}
+      {/* ABOUT SECTION */}
+      <section
+        className="py-20 px-4 relative"
+        style={{
+          background: `linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary))`
+        }}
+      >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-50" />
 
         <div className="max-w-4xl mx-auto relative">
@@ -156,28 +216,30 @@ function App() {
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeInUp}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
+            <h2
+              className="text-3xl md:text-4xl font-bold mb-4"
+              style={{ color: 'var(--text-primary)' }}
+            >
               About Me
             </h2>
-            <div className="w-20 h-1.5 bg-gradient-to-r from-gray-400 via-gray-600 to-gray-800 mx-auto rounded-full shadow-sm" />
+            <div className="gradient-divider mx-auto" />
           </motion.div>
 
           <motion.div
-            className="relative rounded-3xl p-8 md:p-12 shadow-2xl border border-gray-200/50 overflow-hidden"
+            className="glass-card relative rounded-3xl p-8 md:p-12 overflow-hidden"
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6 }}
           >
-            {/* Glass background */}
-            <div className="absolute inset-0 bg-white/90 backdrop-blur-xl" />
-
-            {/* Gradient accents */}
             <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-gray-100/50 to-transparent rounded-full blur-3xl" />
             <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-gray-100/50 to-transparent rounded-full blur-3xl" />
 
             <div className="relative">
-              <p className="text-base md:text-lg text-gray-700 leading-relaxed mb-10 text-center max-w-2xl mx-auto">
+              <p
+                className="text-base md:text-lg leading-relaxed mb-10 text-center max-w-2xl mx-auto"
+                style={{ color: 'var(--text-secondary)' }}
+              >
                 I'm a fullstack developer building clean, efficient web apps with React, Express.js, Tailwind, and more. I also work with Solidity for blockchain smart contracts, creating secure decentralized solutions.
               </p>
 
@@ -192,7 +254,7 @@ function App() {
                   <motion.span
                     key={skill}
                     variants={fadeInUp}
-                    className="px-5 py-2.5 bg-white/80 backdrop-blur-sm text-gray-700 rounded-xl text-sm font-medium border border-gray-200/50 hover:border-gray-400 hover:bg-white hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1"
+                    className="skill-tag"
                   >
                     {skill}
                   </motion.span>
@@ -203,16 +265,22 @@ function App() {
         </div>
       </section>
 
-      {/* PROJECTS SECTION with scroll snapping and refined parallax orbs */}
-      <section id="projects" ref={projectsRef} className="py-32 px-4 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-        {/* Background decoration with animated shapes */}
+      {/* PROJECTS SECTION */}
+      <section
+        id="projects"
+        ref={projectsRef}
+        className="py-32 px-4 relative overflow-hidden"
+        style={{
+          background: `linear-gradient(to bottom, var(--bg-secondary), var(--bg-primary))`
+        }}
+      >
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:6rem_6rem] opacity-30" />
         <div className="absolute inset-0 pointer-events-none">
           <svg className="absolute top-0 left-0 w-full h-full opacity-30" preserveAspectRatio="none">
             <defs>
               <linearGradient id="shapeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: '#6B7280', stopOpacity: 0.2 }} />
-                <stop offset="100%" style={{ stopColor: '#1E3A8A', stopOpacity: 0.1 }} />
+                <stop offset="0%" stopColor="var(--color-gray-600)" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="var(--color-blue-900)" stopOpacity="0.1" />
               </linearGradient>
             </defs>
             <motion.g style={{ y: projectsY }}>
@@ -230,10 +298,13 @@ function App() {
             viewport={{ once: true, amount: 0.3 }}
             variants={fadeInUp}
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
+            <h2
+              className="text-3xl md:text-4xl font-bold mb-4"
+              style={{ color: 'var(--text-primary)' }}
+            >
               Featured Projects
             </h2>
-            <div className="w-20 h-1.5 bg-gradient-to-r from-gray-400 via-gray-600 to-gray-800 mx-auto rounded-full shadow-sm" />
+            <div className="gradient-divider mx-auto" />
           </motion.div>
 
           <div className="snap-y snap-mandatory space-y-16 md:space-y-24">
@@ -251,13 +322,16 @@ function App() {
         </div>
       </section>
 
-      {/* CONTACT SECTION with enhanced glass effect */}
-      <section className="py-20 px-4 relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-        {/* Enhanced background pattern */}
+      {/* CONTACT SECTION */}
+      <section
+        className="py-20 px-4 relative overflow-hidden"
+        style={{
+          backgroundColor: theme === 'dark' ? '#0f172a' : '#111827'
+        }}
+      >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[length:30px_30px]" />
         <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
 
-        {/* Gradient orbs for depth */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-gray-700/20 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gray-600/20 rounded-full blur-3xl" />
 
@@ -284,7 +358,11 @@ function App() {
           <motion.a
             variants={fadeInUp}
             href="mailto:trevsykes97@gmail.com"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white/95 backdrop-blur-sm text-gray-900 rounded-xl font-medium text-lg hover:bg-white hover:shadow-2xl transition-all duration-200 transform hover:-translate-y-1 mb-10 shadow-xl"
+            className="contact-link mb-10"
+            style={{
+              backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
+              color: theme === 'dark' ? '#f1f5f9' : '#111827'
+            }}
           >
             <FiMail size={20} />
             trevsykes97@gmail.com

@@ -1,20 +1,233 @@
 @import "tailwindcss";
 
+@theme {
+    /* Light Mode Colors (default) */
+    --color-dark: #111827;
+    --color-darker: #0f172a;
+    --color-card: #1e293b;
+    --color-card-hover: #334155;
+
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+
+    --color-blue-900: #1e3a8a;
+
+    /* Theme-aware colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --bg-tertiary: #f3f4f6;
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+    /* Border Radius */
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem;
+    --radius-3xl: 1.5rem;
+    --radius-full: 9999px;
+
+    /* Spacing */
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-6: 1.5rem;
+    --spacing-8: 2rem;
+    --spacing-10: 2.5rem;
+    --spacing-12: 3rem;
+
+    /* Typography */
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    --text-5xl: 3rem;
+
+    /* Blur */
+    --blur-sm: 4px;
+    --blur-md: 12px;
+    --blur-lg: 16px;
+    --blur-xl: 24px;
+    --blur-2xl: 40px;
+    --blur-3xl: 64px;
+}
+
+/* Dark Mode Theme */
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+
+    --color-gray-900: #f1f5f9;
+    --color-gray-800: #e2e8f0;
+    --color-gray-700: #cbd5e1;
+    --color-gray-600: #94a3b8;
+    --color-gray-400: #64748b;
+    --color-gray-300: #475569;
+    --color-gray-200: #334155;
+    --color-gray-100: #1e293b;
+    --color-gray-50: #0f172a;
+}
+
 html {
     scroll-snap-type: y proximity;
 }
 
 /* Disable heavy blur on mobile for performance */
 @media (max-width: 768px) {
-
-    /* Tailwind class you used */
     .backdrop-blur-xl {
         backdrop-filter: none !important;
-        /* ensures it overrides Tailwind utilities */
     }
 
-    /* Optional: disable smaller blurs if needed */
     .backdrop-blur-sm {
         backdrop-filter: none !important;
+    }
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 50;
+    padding: 0.75rem;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-xl);
+}
+
+/* Custom utility classes using theme variables */
+@layer utilities {
+    .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(var(--blur-xl));
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-2xl);
+    }
+
+    [data-theme="dark"] .glass-card {
+        background: rgba(30, 41, 55, 0.8);
+        border: 1px solid rgba(75, 85, 99, 0.3);
+    }
+
+    .gradient-text {
+        background: linear-gradient(to right, var(--color-gray-900), var(--color-gray-700), var(--color-gray-900));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .gradient-divider {
+        width: 5rem;
+        height: 0.375rem;
+        background: linear-gradient(to right, var(--color-gray-400), var(--color-gray-600), var(--color-gray-800));
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary {
+        padding: 0.875rem 1.75rem;
+        background-color: var(--color-gray-900);
+        color: var(--bg-primary);
+        border-radius: var(--radius-xl);
+        font-weight: 500;
+        box-shadow: var(--shadow-lg);
+        transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--color-gray-800);
+        box-shadow: var(--shadow-2xl);
+        transform: translateY(-0.25rem);
+    }
+
+    .btn-secondary {
+        padding: 0.875rem 1.75rem;
+        background-color: var(--bg-tertiary);
+        backdrop-filter: blur(var(--blur-sm));
+        border: 2px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: var(--radius-xl);
+        font-weight: 500;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--color-gray-600);
+        background-color: var(--bg-primary);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-0.25rem);
+    }
+
+    .skill-tag {
+        padding: 0.625rem 1.25rem;
+        background-color: var(--bg-tertiary);
+        backdrop-filter: blur(var(--blur-sm));
+        color: var(--text-primary);
+        border-radius: var(--radius-xl);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
+    }
+
+    .skill-tag:hover {
+        border-color: var(--color-gray-400);
+        background-color: var(--bg-primary);
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-0.25rem);
+    }
+
+    .contact-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        background-color: var(--bg-primary);
+        backdrop-filter: blur(var(--blur-sm));
+        color: var(--text-primary);
+        border-radius: var(--radius-xl);
+        font-weight: 500;
+        font-size: var(--text-lg);
+        box-shadow: var(--shadow-xl);
+        transition: all 0.2s;
+    }
+
+    .contact-link:hover {
+        box-shadow: var(--shadow-2xl);
+        transform: translateY(-0.25rem);
     }
 }
