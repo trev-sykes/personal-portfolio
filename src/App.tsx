@@ -1,398 +1,370 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
-import type { Variants } from "framer-motion";
-import { FiExternalLink, FiGithub, FiMail, FiMoon, FiSun } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { FiExternalLink, FiGithub, FiMoon, FiSun, FiCode, FiDatabase, FiLayers } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
 import projects from './projects';
-import ProjectCard from './components/ProjectCard';
-import { useRef, useState, useEffect } from 'react';
 
 function App() {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [visibleProjects, setVisibleProjects] = useState(3);
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  });
 
-  // Load theme from localStorage on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
-      setTheme(initialTheme);
-      document.documentElement.setAttribute('data-theme', initialTheme);
-    }
-  }, []);
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
-  // Toggle theme
-  const toggleTheme = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
+
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
   };
 
-  const fadeInUp: Variants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
+  const skills = {
+    frontend: ["React", "TypeScript", "Tailwind CSS", "Framer Motion", "Vite"],
+    backend: ["Node.js", "Express", "Prisma", "PostgreSQL", "REST APIs"],
+    blockchain: ["Solidity", "Ethereum", "Smart Contracts", "Web3"]
   };
 
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const projectsRef = useRef(null);
-  const { scrollYProgress: projectsScroll } = useScroll({
-    target: projectsRef,
-    offset: ["start end", "end start"]
-  });
-  const projectsY = useTransform(projectsScroll, [0, 1], [0, -50]);
-
-  const heroRef = useRef(null);
-  const { scrollYProgress: heroScroll } = useScroll({
-    target: heroRef,
-    offset: ["start end", "end start"]
-  });
-  const heroY = useTransform(heroScroll, [0, 1], [100, -150]);
   return (
-    <div
-      className="font-sans transition-colors duration-300"
-      style={{
-        backgroundColor: 'var(--bg-primary)',
-        color: 'var(--text-primary)'
-      }}
-    >
-      {/* Dark Mode Toggle Button */}
+    <div className="min-h-screen" style={{
+      backgroundColor: 'var(--bg-primary)',
+      color: 'var(--text-primary)',
+      transition: 'background-color 0.3s ease'
+    }}>
+
+      {/* Theme Toggle */}
       <motion.button
         onClick={toggleTheme}
-        className="theme-toggle"
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5 }}
-        whileHover={{ scale: 1.1 }}
+        className="fixed top-6 right-6 z-50 p-3 rounded-full backdrop-blur-sm"
+        style={{
+          backgroundColor: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)'
+        }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Toggle theme"
       >
-        <motion.div
-          initial={false}
-          animate={{ rotate: theme === 'dark' ? 180 : 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {theme === 'light' ? (
-            <FiMoon size={20} color="var(--text-primary)" />
-          ) : (
-            <FiSun size={20} color="var(--text-primary)" />
-          )}
-        </motion.div>
+        {theme === 'light' ? <FiMoon size={20} /> : <FiSun size={20} />}
       </motion.button>
 
-      {/* HERO SECTION */}
-      <section
-        ref={heroRef}
-        className="min-h-[70vh] flex items-center justify-center px-4 py-12 relative overflow-hidden"
-        style={{ backgroundColor: 'var(--bg-primary)' }}
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <svg className="absolute top-0 left-0 w-full h-full opacity-25" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="var(--color-gray-600)" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="var(--color-blue-900)" stopOpacity="0.1" />
-              </linearGradient>
-            </defs>
-            <motion.g style={{ y: heroY }}>
-              <circle cx="30%" cy="20%" r="120" fill="url(#heroGradient)" />
-              <circle cx="70%" cy="80%" r="180" fill="url(#heroGradient)" />
-            </motion.g>
-          </svg>
-        </div>
-
+      {/* Hero Section - Concise & Professional */}
+      <section className="px-6 pt-20 pb-16 max-w-5xl mx-auto">
         <motion.div
-          className="relative w-full max-w-4xl mx-auto"
           initial="hidden"
           animate="visible"
-          variants={staggerContainer}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+          className="flex flex-col md:flex-row items-center md:items-start gap-8"
         >
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-            <motion.div
-              className="relative flex-shrink-0"
-              variants={fadeInUp}
-            >
-              <div className="absolute -inset-2 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
-              <div className="relative">
-                <img
-                  src="/mugshot.jpeg"
-                  alt="Trevor Sykes"
-                  className="relative w-32 h-32 md:w-40 md:h-40 rounded-full object-cover ring-4 shadow-2xl"
-                  style={{
-                    borderColor: 'var(--bg-primary)',
-                    boxShadow: 'var(--shadow-2xl)'
-                  }}
-                />
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/0 via-white/10 to-white/0" />
-              </div>
-              <motion.div
-                className="absolute -bottom-2 -right-2 w-12 h-12 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center text-white text-xl shadow-xl backdrop-blur-sm"
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-              >
-                👋
-              </motion.div>
+          <motion.img
+            variants={fadeIn}
+            src="/mugshot.jpeg"
+            alt="Trevor Sykes"
+            className="w-32 h-32 rounded-full object-cover ring-4"
+            style={{
+              borderColor: 'var(--bg-primary)',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.15)'
+            }}
+          />
+
+          <div className="flex-1 text-center md:text-left">
+            <motion.div variants={fadeIn} className="inline-block mb-3 px-4 py-1.5 rounded-full text-sm font-medium" style={{
+              backgroundColor: 'var(--bg-tertiary)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-color)'
+            }}>
+              Open to opportunities
             </motion.div>
 
-            <div className="flex-1 text-center md:text-left md:pt-4">
-              <motion.div
-                variants={fadeInUp}
-                className="inline-block mb-3 px-5 py-2 backdrop-blur-sm rounded-full text-sm font-medium border shadow-sm"
-                style={{
-                  backgroundColor: 'var(--bg-tertiary)',
-                  color: 'var(--text-primary)',
-                  borderColor: 'var(--border-color)'
-                }}
-              >
-                Available for opportunities
-              </motion.div>
-              <motion.h1
-                variants={fadeInUp}
-                className="gradient-text text-4xl md:text-5xl font-bold mb-4"
-              >
-                Trevor Sykes
-              </motion.h1>
-              <motion.p
-                variants={fadeInUp}
-                className="text-lg md:text-xl mb-6 leading-relaxed max-w-xl"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                Fullstack developer crafting clean, efficient web experiences with modern technologies.
-              </motion.p>
-              <motion.div
-                variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start"
-              >
-                <a href="#projects" className="btn-primary">
-                  View My Work
-                </a>
-                <a
-                  href="/resume.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary"
-                >
-                  Resume
-                </a>
-              </motion.div>
-            </div>
+            <motion.h1 variants={fadeIn} className="text-4xl md:text-5xl font-bold mb-3">
+              <span className="gradient-text">Trevor Sykes</span>
+            </motion.h1>
+
+            <motion.p variants={fadeIn} className="text-xl mb-6" style={{ color: 'var(--text-secondary)' }}>
+              Fullstack Developer specializing in React, TypeScript & Blockchain
+            </motion.p>
+
+            <motion.div variants={fadeIn} className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <a href="#projects" className="btn-primary">View Projects</a>
+              <a href="#contact" className="btn-secondary">Get in Touch</a>
+            </motion.div>
           </div>
         </motion.div>
       </section>
 
-      {/* ABOUT SECTION */}
-      <section
-        className="py-20 px-4 relative"
-        style={{
-          background: `linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary))`
-        }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-50" />
+      {/* Skills Section - Clear & Scannable */}
+      <section className="px-6 py-16 max-w-5xl mx-auto">
+        <motion.h2
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-3xl font-bold mb-8 text-center"
+        >
+          Technical Skills
+        </motion.h2>
 
-        <div className="max-w-4xl mx-auto relative">
-          <motion.div
-            className="text-center mb-12"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-          >
-            <h2
-              className="text-3xl md:text-4xl font-bold mb-4"
-              style={{ color: 'var(--text-primary)' }}
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { icon: FiLayers, title: "Frontend", skills: skills.frontend },
+            { icon: FiDatabase, title: "Backend", skills: skills.backend },
+            { icon: FiCode, title: "Blockchain", skills: skills.blockchain }
+          ].map((category, idx) => (
+            <motion.div
+              key={category.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1 }}
+              className="p-6 rounded-2xl"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)'
+              }}
             >
-              About Me
-            </h2>
-            <div className="gradient-divider mx-auto" />
-          </motion.div>
-
-          <motion.div
-            className="glass-card relative rounded-3xl p-8 md:p-12 overflow-hidden"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-gray-100/50 to-transparent rounded-full blur-3xl" />
-            <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-gray-100/50 to-transparent rounded-full blur-3xl" />
-
-            <div className="relative">
-              <p
-                className="text-base md:text-lg leading-relaxed mb-10 text-center max-w-2xl mx-auto"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                I'm a fullstack developer building clean, efficient web apps with React, Express.js, Tailwind, and more. I also work with Solidity for blockchain smart contracts, creating secure decentralized solutions.
-              </p>
-
-              <motion.div
-                className="flex flex-wrap justify-center gap-3"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={staggerContainer}
-              >
-                {["React", "Express.js", "Tailwind", "Solidity", "Prisma", "Postgres"].map((skill) => (
-                  <motion.span
-                    key={skill}
-                    variants={fadeInUp}
-                    className="skill-tag"
-                  >
-                    {skill}
-                  </motion.span>
+              <div className="flex items-center gap-3 mb-4">
+                <category.icon size={24} style={{ color: 'var(--text-primary)' }} />
+                <h3 className="text-lg font-semibold">{category.title}</h3>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {category.skills.map(skill => (
+                  <span key={skill} className="skill-tag text-sm">{skill}</span>
                 ))}
-              </motion.div>
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
-      {/* PROJECTS SECTION */}
-      <section
-        id="projects"
-        ref={projectsRef}
-        className="py-32 px-4 relative overflow-hidden"
-        style={{
-          background: `linear-gradient(to bottom, var(--bg-secondary), var(--bg-primary))`
-        }}
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,0,0,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.02)_1px,transparent_1px)] bg-[size:6rem_6rem] opacity-30" />
-        <div className="absolute inset-0 pointer-events-none">
-          <svg className="absolute top-0 left-0 w-full h-full opacity-30" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="shapeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="var(--color-gray-600)" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="var(--color-blue-900)" stopOpacity="0.1" />
-              </linearGradient>
-            </defs>
-            <motion.g style={{ y: projectsY }}>
-              <circle cx="20%" cy="30%" r="150" fill="url(#shapeGradient)" />
-              <circle cx="80%" cy="70%" r="200" fill="url(#shapeGradient)" />
-            </motion.g>
-          </svg>
-        </div>
+      {/* Projects Section - Hero Focus */}
+      <section id="projects" className="px-6 py-16 max-w-5xl mx-auto">
+        <motion.h2
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-3xl font-bold mb-3 text-center"
+        >
+          Featured Work
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="text-center mb-12 text-lg"
+          style={{ color: 'var(--text-secondary)' }}
+        >
+          Production-ready applications showcasing full-stack development
+        </motion.p>
 
-        <div className="max-w-4xl mx-auto relative">
-          <motion.div
-            className="text-center mb-24"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={fadeInUp}
-          >
-            <h2
-              className="text-3xl md:text-4xl font-bold mb-4"
-              style={{ color: 'var(--text-primary)' }}
+        <div className="space-y-8">
+          {projects.slice(0, visibleProjects).map((project) => (
+            <motion.div
+              key={project.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.4 }}
+              className="group rounded-2xl overflow-hidden"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+              }}
             >
-              Featured Projects
-            </h2>
-            <div className="gradient-divider mx-auto" />
-          </motion.div>
+              <div className="md:flex">
+                <div className="md:w-2/5 relative overflow-hidden bg-gray-200">
+                  <img
+                    src={project.thumbnail}
+                    alt={project.title}
+                    className="w-full h-64 md:h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
 
-          <div className="snap-y snap-mandatory space-y-16 md:space-y-24">
-            {projects.map((project, index) => (
-              <div
-                key={project.id}
-                className="snap-start snap-always min-h-[60vh] flex items-center justify-center"
-              >
-                <div className="max-w-2xl w-full">
-                  <ProjectCard {...project} index={index} />
+                <div className="md:w-3/5 p-8">
+                  <h3 className="text-2xl font-bold mb-3">{project.title}</h3>
+
+                  {/* Mobile description */}
+                  <p className="md:hidden mb-4 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    {project.mobileDescription}
+                  </p>
+
+                  {/* Desktop / tablet description */}
+                  <p className="hidden md:block mb-4 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                    {project.description}
+                  </p>
+
+                  <div className="hidden sm:flex flex-wrap gap-2 mb-6">
+                    {project.tech.map((tech) => (
+                      <span key={tech} className="skill-tag text-sm">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-4">
+                    {project.github && (
+                      <a
+                        href={project.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm font-medium hover:underline"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        <FiGithub size={18} /> View Code
+                      </a>
+                    )}
+                    {project.liveDemo && (
+                      <a
+                        href={project.liveDemo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm font-medium hover:underline"
+                        style={{ color: 'var(--text-primary)' }}
+                      >
+                        <FiExternalLink size={18} /> Live Demo
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </motion.div>
+          ))}
         </div>
+        {visibleProjects < projects.length && (
+          <div className="text-center mt-8">
+            <button
+              onClick={() => setVisibleProjects(visibleProjects + 3)} // load 3 more at a time
+              className="btn-primary"
+            >
+              Load More
+            </button>
+          </div>
+        )}
       </section>
 
-      {/* CONTACT SECTION */}
-      <section
-        className="py-20 px-4 relative overflow-hidden"
-        style={{
-          backgroundColor: theme === 'dark' ? '#0f172a' : '#111827'
-        }}
-      >
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[length:30px_30px]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem]" />
-
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gray-700/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gray-600/20 rounded-full blur-3xl" />
-
+      {/* Contact Section - Direct & Professional */}
+      <section id="contact" className="px-6 py-20 text-center" style={{
+        backgroundColor: theme === 'dark' ? '#0f172a' : '#111827'
+      }}>
         <motion.div
-          className="relative max-w-2xl mx-auto text-center text-white"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-          variants={staggerContainer}
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto text-white"
         >
-          <motion.h2
-            variants={fadeInUp}
-            className="text-3xl md:text-4xl font-bold mb-4"
-          >
-            Let's Connect
-          </motion.h2>
-          <motion.p
-            variants={fadeInUp}
-            className="text-gray-400 text-lg mb-10"
-          >
-            Have a project in mind? Let's build something great together.
-          </motion.p>
+          <h2 className="text-3xl font-bold mb-4">Let's Work Together</h2>
+          <p className="text-gray-300 text-lg mb-8">
+            Looking for a developer who can deliver clean, efficient solutions? Let's talk.
+          </p>
 
-          <motion.a
-            variants={fadeInUp}
+          <a
             href="mailto:trevsykes97@gmail.com"
-            className="contact-link mb-10"
-            style={{
-              backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
-              color: theme === 'dark' ? '#f1f5f9' : '#111827'
-            }}
+            className="mailto-btn inline-flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-lg transition-transform hover:scale-105 mb-10"
           >
-            <FiMail size={20} />
-            trevsykes97@gmail.com
-          </motion.a>
+            <span>trevsykes97@gmail.com</span>
+          </a>
 
-          <motion.div
-            variants={fadeInUp}
-            className="flex justify-center gap-8 pt-8 border-t border-gray-700/50"
-          >
+          <div className="flex justify-center gap-8 pt-8 border-t border-gray-700">
             <a
               href="https://github.com/trev-sykes"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-all duration-200 group"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
             >
-              <FiGithub size={22} className="group-hover:scale-110 transition-transform" />
-              <span className="font-medium">GitHub</span>
+              <FiGithub size={20} />
+              <span>GitHub</span>
             </a>
             <a
               href="https://linkedin.com/in/trevsykes/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-gray-300 hover:text-white transition-all duration-200 group"
+              className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
             >
-              <FiExternalLink size={22} className="group-hover:scale-110 transition-transform" />
-              <span className="font-medium">LinkedIn</span>
+              <FiExternalLink size={20} />
+              <span>LinkedIn</span>
             </a>
-          </motion.div>
+          </div>
         </motion.div>
       </section>
+
+      <style>{`
+        .gradient-text {
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        
+        .btn-primary {
+          padding: 0.75rem 1.5rem;
+          background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+          color: white;
+          border-radius: 0.75rem;
+          font-weight: 600;
+          transition: transform 0.2s;
+          display: inline-block;
+        }
+        
+        .btn-primary:hover {
+          transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+          padding: 0.75rem 1.5rem;
+          background-color: var(--bg-secondary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 0.75rem;
+          font-weight: 600;
+          transition: all 0.2s;
+          display: inline-block;
+        }
+        
+        .btn-secondary:hover {
+          transform: translateY(-2px);
+          border-color: var(--text-secondary);
+        }
+        
+        .skill-tag {
+          padding: 0.5rem 1rem;
+          background-color: var(--bg-tertiary);
+          color: var(--text-secondary);
+          border-radius: 0.5rem;
+          font-weight: 500;
+          border: 1px solid var(--border-color);
+        }
+          .mailto-btn {
+          background-color: var(--bg-tertiary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          text-align: center;
+          flex-wrap: wrap; /* ensures icon + text don't overflow on small screens */
+        }
+
+        [data-theme="dark"] .mailto-btn {
+          background-color: var(--bg-secondary);
+          color: var(--text-primary);
+          border-color: var(--border-color);
+        }
+        
+        :root {
+          --bg-primary: #ffffff;
+          --bg-secondary: #f9fafb;
+          --bg-tertiary: #f3f4f6;
+          --text-primary: #111827;
+          --text-secondary: #6b7280;
+          --border-color: #e5e7eb;
+        }
+        
+        [data-theme="dark"] {
+          --bg-primary: #0f172a;
+          --bg-secondary: #1e293b;
+          --bg-tertiary: #334155;
+          --text-primary: #f1f5f9;
+          --text-secondary: #94a3b8;
+          --border-color: #334155;
+        }
+      `}</style>
     </div>
   );
 }
